@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Edit Experience — Private Viewing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0A0A0A;
+    --paper:#FAFAF8;
+    --panel:#FFFFFF;
+    --hair:#E4E2DC;
+    --hair-strong:#C9C6BE;
+    --muted:#8C887F;
+    --muted-2:#6A675F;
+    --charcoal:#1C1C1C;
+    --plate:#EFEDE7;
+    --plate-2:#E7E4DD;
+    --reserved:#9A7B3F;
+    --sold:#9A9A9A;
+    --avail:#0A0A0A;
+    --shadow:0 24px 60px -28px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  .serif{font-family:'Cormorant Garamond',Georgia,serif;}
+  .eyebrow{
+    font-size:10.5px;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--muted-2);
+    font-weight:500;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+
+  /* ---------- Access bar ---------- */
+  .access{
+    background:var(--ink);
+    color:#EDEAE3;
+    font-size:11px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:9px 20px;
+    text-align:center;
+    flex-wrap:wrap;
+  }
+  .access .dot{width:5px;height:5px;border-radius:50%;background:#6CCB7D;display:inline-block;margin-right:8px;vertical-align:middle;box-shadow:0 0 0 3px rgba(108,203,125,.18);}
+  .access b{font-weight:600;color:#fff;}
+  .access .sep{opacity:.32;}
+
+  /* ---------- Masthead ---------- */
+  header.mast{
+    border-bottom:1px solid var(--hair);
+    background:var(--paper);
+    position:sticky;top:0;z-index:40;
+    backdrop-filter:saturate(1.1) blur(6px);
+  }
+  .mast-inner{
+    max-width:1240px;margin:0 auto;padding:22px 28px 0;
+    display:flex;flex-direction:column;align-items:center;gap:18px;
+  }
+  .wordmark{
+    font-family:'Inter';font-weight:300;
+    letter-spacing:.52em;font-size:18px;text-transform:uppercase;
+    padding-left:.52em;text-align:center;line-height:1;
+  }
+  .wordmark span{font-weight:500;}
+  .tagline{font-style:italic;font-size:14px;color:var(--muted-2);margin-top:2px;}
+
+  .nav{
+    display:flex;align-items:center;gap:30px;
+    width:100%;justify-content:center;border-top:1px solid var(--hair);
+    padding:13px 0 14px;position:relative;flex-wrap:wrap;
+  }
+  .cat{
+    background:none;border:none;padding:4px 0;font-size:11.5px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--muted-2);
+    position:relative;transition:color .2s;
+  }
+  .cat:hover{color:var(--ink);}
+  .cat.active{color:var(--ink);}
+  .cat.active::after{
+    content:"";position:absolute;left:50%;transform:translateX(-50%);
+    bottom:-8px;width:5px;height:5px;background:var(--ink);border-radius:50%;
+  }
+  .search-wrap{
+    position:absolute;right:0;top:50%;transform:translateY(-50%);
+    display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--hair-strong);
+    padding-bottom:4px;
+  }
+  .search-wrap svg{width:14px;height:14px;color:var(--muted);}
+  .search-wrap input{
+    border:none;background:none;font-family:inherit;font-size:12px;
+    letter-spacing:.06em;width:120px;color:var(--ink);
+  }
+  .search-wrap input::placeholder{color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-size:10.5px;}
+  .search-wrap input:focus{outline:none;}
+
+  /* ---------- View-as control ---------- */
+  .viewbar{
+    max-width:1240px;margin:0 auto;padding:18px 28px 0;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .viewbar .lede{max-width:540px;}
+  .viewbar .lede .eyebrow{margin-bottom:7px;}
+  .viewbar .lede h1{
+    font-family:'Cormorant Garamond';font-weight:500;font-size:30px;
+    line-height:1.08;margin:0;letter-spacing:.005em;
+  }
+  .roles{display:flex;align-items:stretch;border:1px solid var(--hair-strong);border-radius:2px;overflow:hidden;}
+  .role{
+    background:var(--panel);border:none;padding:9px 15px;font-size:10px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);
+    border-left:1px solid var(--hair);transition:.18s;line-height:1.3;text-align:left;
+  }
+  .role:first-child{border-left:none;}
+  .role small{display:block;font-size:8.5px;letter-spacing:.1em;color:var(--muted);margin-top:2px;}
+  .role.active{background:var(--ink);color:#fff;}
+  .role.active small{color:rgba(255,255,255,.6);}
+
+  .perm-note{
+    max-width:1240px;margin:14px auto 0;padding:0 28px;
+  }
+  .perm-note .inner{
+    border:1px solid var(--hair);border-left:2px solid var(--ink);
+    padding:11px 16px;font-size:12.5px;color:var(--muted-2);
+    background:rgba(255,255,255,.5);letter-spacing:.01em;
+  }
+  .perm-note b{color:var(--ink);font-weight:500;}
+
+  /* ---------- Grid ---------- */
+  main{max-width:1240px;margin:0 auto;padding:26px 28px 90px;}
+  .meta-row{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:1px solid var(--hair);padding-bottom:12px;margin-bottom:26px;flex-wrap:wrap;gap:8px;
+  }
+  .count{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);}
+  .count b{color:var(--ink);font-weight:600;}
+  .sortby{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--hair);border:1px solid var(--hair);
+  }
+  .card{
+    background:var(--paper);padding:0;border:none;text-align:left;
+    display:flex;flex-direction:column;position:relative;
+    transition:background .25s;
+  }
+  .card:hover{background:var(--panel);}
+  .card:hover .plate{filter:contrast(1.02);}
+  .plate{
+    aspect-ratio:4/4.4;position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(120% 90% at 50% 18%, #fff 0%, var(--plate) 58%, var(--plate-2) 100%);
+    border-bottom:1px solid var(--hair);
+  }
+  .plate-frame{
+    position:absolute;inset:18px;border:1px solid rgba(10,10,10,.10);
+  }
+  .plate-mono{
+    font-family:'Cormorant Garamond';font-style:italic;font-weight:500;
+    font-size:34px;color:rgba(10,10,10,.16);letter-spacing:.02em;text-align:center;line-height:1.1;
+    padding:0 18px;
+  }
+  .plate-idx{
+    position:absolute;top:14px;left:16px;font-size:10px;letter-spacing:.2em;
+    color:var(--muted-2);font-variant-numeric:tabular-nums;
+  }
+  .status{
+    position:absolute;top:13px;right:14px;font-size:9px;letter-spacing:.18em;
+    text-transform:uppercase;padding:4px 8px;background:rgba(250,250,248,.9);
+    border:1px solid var(--hair-strong);color:var(--avail);
+  }
+  .status.reserved{color:var(--reserved);border-color:#D9C9A6;}
+  .status.sold{color:var(--sold);border-color:#DDD;}
+
+  .card-body{padding:15px 16px 18px;display:flex;flex-direction:column;gap:5px;flex:1;}
+  .brand{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2);font-weight:500;}
+  .model{font-family:'Cormorant Garamond';font-weight:500;font-size:19px;line-height:1.15;margin:0;}
+  .ref{font-size:11px;color:var(--muted);letter-spacing:.04em;}
+  .card-foot{
+    margin-top:auto;padding-top:12px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;
+  }
+  .price{font-family:'Cormorant Garamond';font-weight:500;font-size:20px;letter-spacing:.01em;font-variant-numeric:tabular-nums;}
+  .price .cur{font-size:12px;color:var(--muted-2);margin-right:2px;vertical-align:1px;}
+  .cond{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);text-align:right;}
+  .cost-line{font-size:10.5px;color:var(--reserved);letter-spacing:.04em;margin-top:3px;}
+  .consigner{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:5px;}
+
+  .empty{
+    grid-column:1/-1;background:var(--paper);padding:70px 20px;text-align:center;
+  }
+  .empty .serif{font-size:24px;color:var(--muted-2);}
+  .empty p{font-size:13px;color:var(--muted);letter-spacing:.04em;}
+
+  /* ---------- Drawer ---------- */
+  .scrim{
+    position:fixed;inset:0;background:rgba(10,10,10,.42);opacity:0;visibility:hidden;
+    transition:opacity .3s;z-index:60;
+  }
+  .scrim.open{opacity:1;visibility:visible;}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:440px;max-width:92vw;
+    background:var(--paper);z-index:70;transform:translateX(100%);
+    transition:transform .42s cubic-bezier(.5,.1,.2,1);display:flex;flex-direction:column;
+    box-shadow:var(--shadow);
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 24px;border-bottom:1px solid var(--hair);
+  }
+  .drawer-head .eyebrow{letter-spacing:.22em;}
+  .x{background:none;border:none;font-size:20px;color:var(--muted-2);line-height:1;padding:4px;}
+  .x:hover{color:var(--ink);}
+  .drawer-scroll{overflow-y:auto;flex:1;}
+  .d-plate{
+    aspect-ratio:1/1;background:
+      radial-gradient(120% 90% at 50% 16%, #fff 0%, var(--plate) 60%, var(--plate-2) 100%);
+    display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid var(--hair);
+  }
+  .d-plate .plate-frame{inset:26px;}
+  .d-plate .plate-mono{font-size:46px;}
+  .d-body{padding:24px;}
+  .d-body .brand{margin-bottom:8px;}
+  .d-body h2{font-family:'Cormorant Garamond';font-weight:500;font-size:30px;margin:0 0 4px;line-height:1.1;}
+  .d-body .ref{margin-bottom:20px;}
+  .spec{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid var(--hair);font-size:13px;}
+  .spec:last-of-type{border-bottom:1px solid var(--hair);}
+  .spec .k{color:var(--muted-2);letter-spacing:.1em;text-transform:uppercase;font-size:10.5px;align-self:center;}
+  .spec .v{font-weight:400;text-align:right;}
+  .d-price{font-family:'Cormorant Garamond';font-weight:500;font-size:30px;margin:22px 0 4px;font-variant-numeric:tabular-nums;}
+  .d-price .cur{font-size:15px;color:var(--muted-2);margin-right:3px;}
+  .d-admin{
+    margin-top:14px;border:1px solid #E3D7BD;background:#FBF7EC;padding:13px 15px;font-size:12px;color:var(--muted-2);
+  }
+  .d-admin .row{display:flex;justify-content:space-between;padding:3px 0;}
+  .d-admin .row b{color:var(--reserved);font-weight:600;}
+  .d-foot{padding:18px 24px 26px;border-top:1px solid var(--hair);display:flex;flex-direction:column;gap:10px;}
+  .btn{
+    border:1px solid var(--ink);background:var(--ink);color:#fff;padding:14px;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;transition:.2s;
+  }
+  .btn:hover{background:var(--charcoal);}
+  .btn.ghost{background:none;color:var(--ink);}
+  .btn.ghost:hover{background:var(--ink);color:#fff;}
+  .btn:disabled{opacity:.4;cursor:default;border-color:var(--muted);background:var(--muted);}
+  .btn.ghost:disabled{background:none;color:var(--muted);}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--hair);padding:34px 28px;text-align:center;}
+  footer .wordmark{font-size:13px;letter-spacing:.42em;}
+  footer p{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:12px 0 0;}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:13px 22px;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;z-index:90;opacity:0;transition:.32s;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:880px){
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .viewbar{flex-direction:column;align-items:flex-start;}
+    .search-wrap{position:static;transform:none;margin-top:6px;}
+    .nav{gap:20px;}
+  }
+  @media (max-width:560px){
+    .grid{grid-template-columns:1fr;}
+    .mast-inner{padding:18px 18px 0;}
+    main{padding:22px 16px 70px;}
+    .wordmark{font-size:15px;letter-spacing:.4em;}
+    .viewbar{padding:16px 16px 0;}
+    .perm-note{padding:0 16px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="access">
+    <span><span class="dot"></span>Private viewing</span>
+    <span class="sep">—</span>
+    <span>Client: <b id="clientName">Maison Kapoor (Wholesale)</b></span>
+    <span class="sep">—</span>
+    <span>Reseller: <b>Vasu — Edit Experience</b></span>
+    <span class="sep">—</span>
+    <span>Key: <b>EX-7741-K</b></span>
+  </div>
+
+  <header class="mast">
+    <div class="mast-inner">
+      <div style="text-align:center">
+        <div class="wordmark">EDIT <span>EXPERIENCE</span></div>
+        <div class="serif tagline">The edit, made private.</div>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="cat active" data-cat="all">All Pieces</button>
+        <button class="cat" data-cat="watches">Watches</button>
+        <button class="cat" data-cat="hermes">Hermès</button>
+        <button class="cat" data-cat="chanel">Chanel</button>
+        <button class="cat" data-cat="jewellery">Jewellery</button>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="search" type="text" placeholder="Search" aria-label="Search inventory" />
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="viewbar">
+    <div class="lede">
+      <div class="eyebrow">Curated for you · Updated live from the vault</div>
+      <h1 class="serif">A private selection, drawn from the warehouse cloud.</h1>
+    </div>
+    <div class="roles" role="group" aria-label="View as">
+      <button class="role active" data-role="client">Client view<small>Gated · B2B price</small></button>
+      <button class="role" data-role="reseller">Reseller view<small>My stock · margin</small></button>
+      <button class="role" data-role="warehouse">Warehouse<small>Admin · all consigners</small></button>
+    </div>
+  </div>
+
+  <div class="perm-note"><div class="inner" id="permNote"></div></div>
+
+  <main>
+    <div class="meta-row">
+      <div class="count"><b id="count">0</b> pieces available to you</div>
+      <div class="sortby">Sorted · Newest to the vault</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <footer>
+    <div class="wordmark">EDIT EXPERIENCE</div>
+    <p>Private B2B catalogue · Powered by the Edit Experience vault</p>
+  </footer>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Piece detail"></aside>
+  <div class="toast" id="toast"></div>
+
+<script>
+const DATA = [
+  {id:1, idx:"001", cat:"watches", brand:"Rolex", model:"Daytona", ref:"126500LN · Panda", cond:"Unworn", year:"2024", status:"available", price:48500, cost:41000, consigner:"Store stock", set:"Full set · stickers"},
+  {id:2, idx:"002", cat:"hermes", brand:"Hermès", model:"Birkin 25", ref:"Togo · Gold · GHW", cond:"New", year:"2024", status:"available", price:39800, cost:32500, consigner:"Vasu — own", set:"Receipt · box · dust"},
+  {id:3, idx:"003", cat:"watches", brand:"Audemars Piguet", model:"Royal Oak 41", ref:"15500ST · Blue", cond:"Excellent", year:"2022", status:"reserved", price:42000, cost:36800, consigner:"Cowon Stock", set:"Box only"},
+  {id:4, idx:"004", cat:"chanel", brand:"Chanel", model:"Classic Flap M", ref:"Caviar · Black · GHW", cond:"Excellent", year:"2023", status:"available", price:9200, cost:7400, consigner:"Vasu — own", set:"Card · dust"},
+  {id:5, idx:"005", cat:"hermes", brand:"Hermès", model:"Kelly 28", ref:"Epsom · Etoupe · PHW", cond:"Pristine", year:"2023", status:"available", price:34500, cost:28900, consigner:"Store stock", set:"Full set"},
+  {id:6, idx:"006", cat:"watches", brand:"Patek Philippe", model:"Nautilus", ref:"5711/1A · Blue", cond:"Excellent", year:"2021", status:"sold", price:165000, cost:148000, consigner:"Cowon Stock", set:"Full set"},
+  {id:7, idx:"007", cat:"jewellery", brand:"Cartier", model:"Love Bracelet", ref:"18k YG · Sz 17", cond:"Unworn", year:"2024", status:"available", price:8400, cost:6900, consigner:"Vasu — own", set:"Full set · cert"},
+  {id:8, idx:"008", cat:"watches", brand:"Rolex", model:"GMT-Master II", ref:"126710BLRO · Pepsi", cond:"Unworn", year:"2024", status:"available", price:26500, cost:22800, consigner:"Store stock", set:"Full set · stickers"},
+  {id:9, idx:"009", cat:"chanel", brand:"Chanel", model:"19 Flap", ref:"Lambskin · Beige · MHW", cond:"New", year:"2024", status:"reserved", price:8900, cost:7100, consigner:"Vasu — own", set:"Full set"},
+];
+
+const ROLE_NOTES = {
+  client: "You are seeing the <b>gated B2B catalogue</b> for your account only. Pricing shown is your wholesale tier. Cost, margin, and consigner identity are hidden — this is exactly what your clients see when you forward your link.",
+  reseller: "Reseller view adds <b>your landed cost and margin</b> on pieces you own, and flags which stock is yours vs. consigned store stock you're cleared to resell.",
+  warehouse: "Warehouse admin sees <b>every consigner's stock, cost, and margin</b> across the cloud — the master inventory that each account is a scoped slice of."
+};
+
+let state = {role:"client", cat:"all", q:""};
+const $ = s => document.querySelector(s);
+const grid = $("#grid"), countEl = $("#count"), permNote = $("#permNote");
+
+function money(n){ return n.toLocaleString("en-US"); }
+
+function visible(){
+  return DATA.filter(d=>{
+    const okCat = state.cat==="all" || d.cat===state.cat;
+    const q = state.q.trim().toLowerCase();
+    const okQ = !q || (d.brand+" "+d.model+" "+d.ref).toLowerCase().includes(q);
+    return okCat && okQ;
+  });
+}
+
+function statusLabel(s){ return s==="available"?"Available":s==="reserved"?"Reserved":"Sold"; }
+
+function card(d){
+  const showCost = state.role!=="client";
+  const showConsigner = state.role==="warehouse";
+  const margin = d.price - d.cost;
+  return `
+  <button class="card" data-id="${d.id}" aria-label="${d.brand} ${d.model}">
+    <div class="plate">
+      <div class="plate-frame"></div>
+      <div class="plate-idx">№ ${d.idx}</div>
+      <div class="status ${d.status}">${statusLabel(d.status)}</div>
+      <div class="plate-mono">${d.brand}</div>
+    </div>
+    <div class="card-body">
+      <div class="brand">${d.brand}</div>
+      <div class="model serif">${d.model}</div>
+      <div class="ref">${d.ref}</div>
+      <div class="card-foot">
+        <div>
+          <div class="price"><span class="cur">$</span>${money(d.price)}</div>
+          ${showCost ? `<div class="cost-line">Cost $${money(d.cost)} · +$${money(margin)}</div>`:``}
+          ${showConsigner ? `<div class="consigner">${d.consigner}</div>`:``}
+        </div>
+        <div class="cond">${d.cond}</div>
+      </div>
+    </div>
+  </button>`;
+}
+
+function render(){
+  const items = visible();
+  countEl.textContent = items.length;
+  permNote.innerHTML = ROLE_NOTES[state.role];
+  grid.innerHTML = items.length
+    ? items.map(card).join("")
+    : `<div class="empty"><div class="serif">Nothing in this edit yet.</div><p>Try another category, or clear your search.</p></div>`;
+  grid.querySelectorAll(".card").forEach(c=>c.addEventListener("click",()=>openDrawer(+c.dataset.id)));
+}
+
+/* ---- role + category + search ---- */
+document.querySelectorAll(".role").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".role").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); state.role=b.dataset.role; render();
+}));
+document.querySelectorAll(".cat").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".cat").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); state.cat=b.dataset.cat; render();
+}));
+$("#search").addEventListener("input",e=>{ state.q=e.target.value; render(); });
+
+/* ---- drawer ---- */
+const scrim=$("#scrim"), drawer=$("#drawer");
+function openDrawer(id){
+  const d = DATA.find(x=>x.id===id);
+  const showCost = state.role!=="client";
+  const margin = d.price - d.cost;
+  const reservable = d.status==="available";
+  drawer.innerHTML = `
+    <div class="drawer-head">
+      <div class="eyebrow">Piece № ${d.idx}</div>
+      <button class="x" id="closeX" aria-label="Close">&times;</button>
+    </div>
+    <div class="drawer-scroll">
+      <div class="d-plate"><div class="plate-frame"></div><div class="plate-mono serif">${d.brand}</div></div>
+      <div class="d-body">
+        <div class="brand">${d.brand}</div>
+        <h2 class="serif">${d.model}</h2>
+        <div class="ref">${d.ref}</div>
+        <div class="spec"><span class="k">Condition</span><span class="v">${d.cond}</span></div>
+        <div class="spec"><span class="k">Year</span><span class="v">${d.year}</span></div>
+        <div class="spec"><span class="k">Accessories</span><span class="v">${d.set}</span></div>
+        <div class="spec"><span class="k">Status</span><span class="v">${statusLabel(d.status)}</span></div>
+        <div class="d-price"><span class="cur">USD</span>${money(d.price)}</div>
+        ${showCost ? `<div class="d-admin">
+            <div class="row"><span>Landed cost</span><span>$${money(d.cost)}</span></div>
+            <div class="row"><span>Margin</span><b>+$${money(margin)}</b></div>
+            <div class="row"><span>Source</span><span>${d.consigner}</span></div>
+          </div>`:``}
+      </div>
+    </div>
+    <div class="d-foot">
+      <button class="btn" id="reserveBtn" ${reservable?"":"disabled"}>${reservable?"Reserve this piece":"Currently "+statusLabel(d.status).toLowerCase()}</button>
+      <button class="btn ghost" id="waBtn">Request via WhatsApp</button>
+    </div>`;
+  drawer.classList.add("open"); scrim.classList.add("open");
+  drawer.setAttribute("aria-hidden","false");
+  $("#closeX").addEventListener("click",closeDrawer);
+  $("#reserveBtn").addEventListener("click",()=>{ if(reservable){ toast(d.model+" reserved · we'll confirm shortly"); closeDrawer(); }});
+  $("#waBtn").addEventListener("click",()=>toast("Opening WhatsApp enquiry…"));
+}
+function closeDrawer(){ drawer.classList.remove("open"); scrim.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); }
+scrim.addEventListener("click",closeDrawer);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDrawer(); });
+
+/* ---- toast ---- */
+let toastT;
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+render();
+</script>
+</body>
+</html>

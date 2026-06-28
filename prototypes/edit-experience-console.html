@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Edit Experience — Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0A0A0A; --paper:#FAFAF8; --panel:#FFFFFF; --hair:#E4E2DC; --hair-strong:#C9C6BE;
+    --muted:#8C887F; --muted-2:#6A675F; --charcoal:#1C1C1C; --plate:#EFEDE7; --plate-2:#E7E4DD;
+    --gold:#9A7B3F; --sold:#9A9A9A; --grid:#ECEAE4;
+    --shadow:0 24px 60px -28px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .serif{font-family:'Cormorant Garamond',Georgia,serif;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .eyebrow{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted-2);font-weight:500;}
+
+  /* ---- Console switcher ---- */
+  .console-bar{
+    background:var(--ink);color:#EDEAE3;display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;flex-wrap:wrap;
+  }
+  .console-bar .brand{font-weight:300;letter-spacing:.4em;font-size:13px;text-transform:uppercase;padding:14px 0;}
+  .console-bar .brand b{font-weight:500;}
+  .portals{display:flex;gap:2px;}
+  .portal-tab{
+    background:none;border:none;color:rgba(255,255,255,.5);padding:16px 18px;font-size:10.5px;
+    letter-spacing:.16em;text-transform:uppercase;position:relative;transition:.2s;line-height:1.3;text-align:left;
+  }
+  .portal-tab small{display:block;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-top:3px;}
+  .portal-tab:hover{color:#fff;}
+  .portal-tab.active{color:#fff;}
+  .portal-tab.active::after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:2px;background:#fff;}
+
+  .demo-note{
+    background:#161616;color:rgba(255,255,255,.55);font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;text-align:center;padding:6px 16px;
+  }
+
+  /* ---- Shared shell ---- */
+  .portal{display:none;}
+  .portal.show{display:block;}
+  .wrap{max-width:1280px;margin:0 auto;padding:24px 28px 80px;}
+
+  .topline{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--hair);padding-bottom:18px;margin-bottom:22px;}
+  .topline h1{font-family:'Cormorant Garamond';font-weight:500;font-size:30px;margin:6px 0 0;line-height:1.05;}
+  .identity{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);}
+  .identity .key{border:1px solid var(--hair-strong);padding:5px 9px;color:var(--ink);}
+
+  /* KPIs */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);margin-bottom:26px;}
+  .kpi{background:var(--paper);padding:18px 18px 16px;}
+  .kpi .v{font-family:'Cormorant Garamond';font-weight:500;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;}
+  .kpi .v .cur{font-size:15px;color:var(--muted-2);margin-right:2px;}
+  .kpi .l{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);margin-top:8px;}
+
+  /* sub tabs */
+  .subtabs{display:flex;gap:26px;border-bottom:1px solid var(--hair);margin-bottom:22px;}
+  .subtab{background:none;border:none;padding:0 0 12px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);position:relative;}
+  .subtab.active{color:var(--ink);}
+  .subtab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink);}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);text-align:left;font-weight:500;padding:0 14px 10px;border-bottom:1px solid var(--hair-strong);}
+  thead th.num,tbody td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--hair);vertical-align:middle;}
+  tbody tr:hover{background:var(--panel);}
+  .pc-name{font-family:'Cormorant Garamond';font-size:16px;font-weight:500;}
+  .pc-sub{font-size:10.5px;color:var(--muted);letter-spacing:.04em;}
+  .pill{display:inline-block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--hair-strong);color:var(--muted-2);}
+  .pill.store{color:#3a3a3a;}
+  .pill.own{color:var(--ink);border-color:var(--ink);}
+  .pill.cowon{color:var(--gold);border-color:#D9C9A6;}
+  .st{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;}
+  .st.available{color:var(--ink);}
+  .st.reserved{color:var(--gold);}
+  .st.sold{color:var(--sold);}
+  .margin{color:var(--gold);font-weight:500;}
+
+  /* account cards */
+  .acct-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);}
+  .acct{background:var(--paper);padding:20px;}
+  .acct h3{font-family:'Cormorant Garamond';font-weight:500;font-size:22px;margin:6px 0 2px;}
+  .acct .handle{font-size:11px;letter-spacing:.08em;color:var(--muted);}
+  .acct .stats{display:flex;gap:22px;margin:16px 0 14px;}
+  .acct .stats div{font-size:11px;color:var(--muted-2);letter-spacing:.04em;}
+  .acct .stats b{display:block;font-family:'Cormorant Garamond';font-size:22px;color:var(--ink);font-weight:500;line-height:1;margin-bottom:3px;}
+  .acct .ln{font-size:11px;color:var(--muted-2);letter-spacing:.04em;border-top:1px solid var(--hair);padding-top:12px;display:flex;justify-content:space-between;gap:8px;align-items:center;}
+  .acct .ln .key{color:var(--ink);border:1px solid var(--hair-strong);padding:3px 7px;font-size:10px;letter-spacing:.08em;}
+
+  /* access matrix */
+  .matrix{border:1px solid var(--hair);margin-top:6px;}
+  .matrix table td,.matrix table th{padding:12px 14px;}
+  .matrix .yes{color:var(--ink);font-weight:600;}
+  .matrix .no{color:var(--hair-strong);}
+  .matrix .cli{font-family:'Cormorant Garamond';font-size:15px;}
+
+  .share-btn{background:var(--ink);color:#fff;border:1px solid var(--ink);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;padding:8px 12px;transition:.2s;}
+  .share-btn:hover{background:var(--charcoal);}
+
+  /* client view */
+  .reseller-switch{display:flex;gap:2px;border:1px solid var(--hair-strong);}
+  .rs{background:var(--panel);border:none;padding:10px 16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);border-left:1px solid var(--hair);}
+  .rs:first-child{border-left:none;}
+  .rs.active{background:var(--ink);color:#fff;}
+  .cat-row{display:flex;gap:24px;border-bottom:1px solid var(--hair);padding-bottom:12px;margin-bottom:22px;}
+  .cat-row button{background:none;border:none;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);position:relative;padding-bottom:2px;}
+  .cat-row button.active{color:var(--ink);}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);}
+  .card{background:var(--paper);text-align:left;border:none;display:flex;flex-direction:column;transition:background .25s;padding:0;}
+  .card:hover{background:var(--panel);}
+  .plate{aspect-ratio:4/4.2;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 18%, #fff 0%, var(--plate) 58%, var(--plate-2) 100%);border-bottom:1px solid var(--hair);}
+  .plate-frame{position:absolute;inset:16px;border:1px solid rgba(10,10,10,.10);}
+  .plate-mono{font-family:'Cormorant Garamond';font-style:italic;font-size:30px;color:rgba(10,10,10,.16);text-align:center;padding:0 14px;}
+  .plate-idx{position:absolute;top:12px;left:14px;font-size:9.5px;letter-spacing:.2em;color:var(--muted-2);}
+  .badge{position:absolute;top:11px;right:12px;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;padding:4px 7px;background:rgba(250,250,248,.9);border:1px solid var(--hair-strong);}
+  .badge.reserved{color:var(--gold);border-color:#D9C9A6;}
+  .badge.sold{color:var(--sold);}
+  .cbody{padding:14px 15px 16px;display:flex;flex-direction:column;gap:4px;flex:1;}
+  .cbrand{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2);font-weight:500;}
+  .cmodel{font-family:'Cormorant Garamond';font-weight:500;font-size:18px;line-height:1.1;}
+  .cref{font-size:10.5px;color:var(--muted);}
+  .cfoot{margin-top:auto;padding-top:10px;display:flex;align-items:flex-end;justify-content:space-between;}
+  .cprice{font-family:'Cormorant Garamond';font-weight:500;font-size:19px;font-variant-numeric:tabular-nums;}
+  .cprice .cur{font-size:11px;color:var(--muted-2);margin-right:2px;}
+  .ccond{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);}
+
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;z-index:90;opacity:0;transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:900px){
+    .kpis,.acct-grid{grid-template-columns:repeat(2,1fr);}
+    .grid{grid-template-columns:repeat(2,1fr);}
+    table{font-size:11.5px;}
+    .hide-sm{display:none;}
+  }
+  @media (max-width:560px){
+    .grid{grid-template-columns:1fr;}
+    .kpis{grid-template-columns:1fr 1fr;}
+    .wrap{padding:20px 16px 60px;}
+    .portals{flex-wrap:wrap;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+  <div class="console-bar">
+    <div class="brand">EDIT <b>EXPERIENCE</b></div>
+    <div class="portals" role="tablist">
+      <button class="portal-tab active" data-portal="admin">Warehouse<small>Master control</small></button>
+      <button class="portal-tab" data-portal="reseller">My Account<small>Reseller view</small></button>
+      <button class="portal-tab" data-portal="client">Client<small>B2B buyer view</small></button>
+    </div>
+  </div>
+  <div class="demo-note">Demo console — in production each login lands directly in its own portal. Here you can step through all three.</div>
+
+  <!-- ============ ADMIN ============ -->
+  <section class="portal show" id="admin">
+    <div class="wrap">
+      <div class="topline">
+        <div><div class="eyebrow">Warehouse · Master control</div><h1 class="serif">The vault, in full.</h1></div>
+        <div class="identity">Logged in · <b style="color:var(--ink)">Edit Experience HQ</b><span class="key">ADMIN-ROOT</span></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="v"><span class="cur">$</span>458,300</div><div class="l">Vault value at cost</div></div>
+        <div class="kpi"><div class="v">9</div><div class="l">Pieces in vault</div></div>
+        <div class="kpi"><div class="v">2</div><div class="l">Reseller accounts</div></div>
+        <div class="kpi"><div class="v">2</div><div class="l">Active B2B clients</div></div>
+      </div>
+      <div class="subtabs">
+        <button class="subtab active" data-sub="admin" data-tab="inv">Master inventory</button>
+        <button class="subtab" data-sub="admin" data-tab="acc">Accounts &amp; access</button>
+      </div>
+
+      <div data-pane="admin-inv">
+        <table>
+          <thead><tr>
+            <th>№</th><th>Piece</th><th class="hide-sm">Consigner</th><th class="num">Cost</th>
+            <th class="num hide-sm">Reseller price</th><th class="num">Client price</th><th class="num">Margin</th><th>Status</th>
+          </tr></thead>
+          <tbody id="adminRows"></tbody>
+        </table>
+      </div>
+
+      <div data-pane="admin-acc" style="display:none">
+        <div class="acct-grid" id="adminAccts"></div>
+        <div style="margin-top:30px">
+          <div class="eyebrow" style="margin-bottom:12px">Access matrix — who can see which reseller</div>
+          <div class="matrix">
+            <table>
+              <thead><tr><th>Client</th><th>Edit Experience</th><th>Cowon Stock</th><th class="hide-sm">Issued key</th></tr></thead>
+              <tbody>
+                <tr><td class="cli serif">Maison Kapoor</td><td class="yes">Granted</td><td class="yes">Granted</td><td class="hide-sm"><span class="pill">EX-7741-K</span></td></tr>
+                <tr><td class="cli serif">Atelier Dubai</td><td class="yes">Granted</td><td class="no">— restricted</td><td class="hide-sm"><span class="pill">EX-3092-D</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESELLER ============ -->
+  <section class="portal" id="reseller">
+    <div class="wrap">
+      <div class="topline">
+        <div><div class="eyebrow">Reseller account · @editexperience</div><h1 class="serif">My edit, my clients.</h1></div>
+        <div class="identity">Vasu · <b style="color:var(--ink)">Edit Experience</b><span class="key">RES-EX-01</span></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="v">5</div><div class="l">Pieces I list</div></div>
+        <div class="kpi"><div class="v">3</div><div class="l">Store stock cleared to me</div></div>
+        <div class="kpi"><div class="v">2</div><div class="l">My B2B clients</div></div>
+        <div class="kpi"><div class="v"><span class="cur">$</span>34,200</div><div class="l">Open margin in catalogue</div></div>
+      </div>
+      <div class="subtabs">
+        <button class="subtab active" data-sub="reseller" data-tab="inv">My inventory</button>
+        <button class="subtab" data-sub="reseller" data-tab="cli">My clients</button>
+      </div>
+
+      <div data-pane="reseller-inv">
+        <table>
+          <thead><tr>
+            <th>№</th><th>Piece</th><th class="hide-sm">Source</th><th class="num">My basis</th>
+            <th class="num">My client price</th><th class="num">Margin</th><th>Status</th>
+          </tr></thead>
+          <tbody id="resRows"></tbody>
+        </table>
+      </div>
+
+      <div data-pane="reseller-cli" style="display:none">
+        <div class="acct-grid" id="resClients"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLIENT ============ -->
+  <section class="portal" id="client">
+    <div class="wrap">
+      <div class="topline">
+        <div><div class="eyebrow">Private viewing · Client portal</div><h1 class="serif">Your access, across houses.</h1></div>
+        <div class="identity">Client · <b style="color:var(--ink)">Maison Kapoor</b><span class="key">EX-7741-K</span></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px;">
+        <div class="eyebrow">You are keyed into 2 reseller accounts — switch between them:</div>
+        <div class="reseller-switch" id="rswitch">
+          <button class="rs active" data-res="EX">Edit Experience</button>
+          <button class="rs" data-res="CW">Cowon Stock</button>
+        </div>
+      </div>
+      <div class="cat-row" id="clientCats">
+        <button class="active" data-cat="all">All</button>
+        <button data-cat="watches">Watches</button>
+        <button data-cat="hermes">Hermès</button>
+        <button data-cat="chanel">Chanel</button>
+        <button data-cat="jewellery">Jewellery</button>
+      </div>
+      <div class="grid" id="clientGrid"></div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ---------- data ---------- */
+const PIECES = [
+  {idx:"001", brand:"Rolex", model:"Daytona", ref:"126500LN · Panda", cat:"watches", cond:"Unworn", consigner:"store", listedBy:["EX"], cost:41000, resBasis:43000, clientPrice:48500, status:"available"},
+  {idx:"002", brand:"Hermès", model:"Birkin 25", ref:"Togo · Gold · GHW", cat:"hermes", cond:"New", consigner:"own", listedBy:["EX"], cost:32500, resBasis:32500, clientPrice:39800, status:"available"},
+  {idx:"003", brand:"Audemars Piguet", model:"Royal Oak 41", ref:"15500ST · Blue", cat:"watches", cond:"Excellent", consigner:"cowon", listedBy:["CW"], cost:36800, resBasis:38500, clientPrice:42000, status:"reserved"},
+  {idx:"004", brand:"Chanel", model:"Classic Flap M", ref:"Caviar · Black · GHW", cat:"chanel", cond:"Excellent", consigner:"own", listedBy:["EX"], cost:7400, resBasis:7400, clientPrice:9200, status:"available"},
+  {idx:"005", brand:"Hermès", model:"Kelly 28", ref:"Epsom · Etoupe · PHW", cat:"hermes", cond:"Pristine", consigner:"store", listedBy:["EX"], cost:28900, resBasis:30500, clientPrice:34500, status:"available"},
+  {idx:"006", brand:"Patek Philippe", model:"Nautilus", ref:"5711/1A · Blue", cat:"watches", cond:"Excellent", consigner:"cowon", listedBy:["CW"], cost:148000, resBasis:152000, clientPrice:165000, status:"sold"},
+  {idx:"007", brand:"Cartier", model:"Love Bracelet", ref:"18k YG · Sz 17", cat:"jewellery", cond:"Unworn", consigner:"own", listedBy:["EX"], cost:6900, resBasis:6900, clientPrice:8400, status:"available"},
+  {idx:"008", brand:"Rolex", model:"GMT-Master II", ref:"126710BLRO · Pepsi", cat:"watches", cond:"Unworn", consigner:"store", listedBy:["CW"], cost:22800, resBasis:24000, clientPrice:26500, status:"available"},
+  {idx:"009", brand:"Chanel", model:"19 Flap", ref:"Lambskin · Beige · MHW", cat:"chanel", cond:"New", consigner:"own", listedBy:["CW"], cost:7100, resBasis:7100, clientPrice:8900, status:"reserved"},
+];
+const money = n => n.toLocaleString("en-US");
+const stLabel = s => s==="available"?"Available":s==="reserved"?"Reserved":"Sold";
+const consPill = c => c==="store"?'<span class="pill store">Store stock</span>':c==="own"?'<span class="pill own">My own</span>':'<span class="pill cowon">Cowon</span>';
+
+/* ---------- portal switch ---------- */
+document.querySelectorAll(".portal-tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll(".portal-tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));
+  document.getElementById(t.dataset.portal).classList.add("show");
+  window.scrollTo({top:0,behavior:"instant"});
+}));
+
+/* ---------- sub tabs ---------- */
+document.querySelectorAll(".subtab").forEach(t=>t.addEventListener("click",()=>{
+  const scope=t.dataset.sub;
+  document.querySelectorAll(`.subtab[data-sub="${scope}"]`).forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  const panes={inv:`${scope}-inv`,acc:`${scope}-acc`,cli:`${scope}-cli`};
+  Object.values(panes).forEach(p=>{const el=document.querySelector(`[data-pane="${p}"]`);if(el)el.style.display="none";});
+  const show=document.querySelector(`[data-pane="${panes[t.dataset.tab]}"]`); if(show)show.style.display="";
+}));
+
+/* ---------- admin inventory ---------- */
+document.getElementById("adminRows").innerHTML = PIECES.map(p=>`
+  <tr>
+    <td style="color:var(--muted)">${p.idx}</td>
+    <td><div class="pc-name serif">${p.brand} ${p.model}</div><div class="pc-sub">${p.ref}</div></td>
+    <td class="hide-sm">${consPill(p.consigner)}</td>
+    <td class="num">$${money(p.cost)}</td>
+    <td class="num hide-sm">$${money(p.resBasis)}</td>
+    <td class="num">$${money(p.clientPrice)}</td>
+    <td class="num margin">+$${money(p.clientPrice-p.cost)}</td>
+    <td><span class="st ${p.status}">${stLabel(p.status)}</span></td>
+  </tr>`).join("");
+
+/* ---------- admin accounts ---------- */
+document.getElementById("adminAccts").innerHTML = `
+  <div class="acct">
+    <div class="eyebrow">Reseller</div>
+    <h3 class="serif">Edit Experience</h3><div class="handle">@editexperience · Vasu</div>
+    <div class="stats"><div><b>5</b>pieces listed</div><div><b>2</b>B2B clients</div><div><b>$34.2k</b>open margin</div></div>
+    <div class="ln"><span>Storefront link</span><span class="key">edit.exp/ex01</span></div>
+  </div>
+  <div class="acct">
+    <div class="eyebrow">Reseller</div>
+    <h3 class="serif">Cowon Stock</h3><div class="handle">@cowonstock · Partner</div>
+    <div class="stats"><div><b>4</b>pieces listed</div><div><b>1</b>B2B client</div><div><b>$19.7k</b>open margin</div></div>
+    <div class="ln"><span>Storefront link</span><span class="key">edit.exp/cw02</span></div>
+  </div>`;
+
+/* ---------- reseller inventory (only EX-listed) ---------- */
+const mine = PIECES.filter(p=>p.listedBy.includes("EX"));
+document.getElementById("resRows").innerHTML = mine.map(p=>`
+  <tr>
+    <td style="color:var(--muted)">${p.idx}</td>
+    <td><div class="pc-name serif">${p.brand} ${p.model}</div><div class="pc-sub">${p.ref} · ${p.cond}</div></td>
+    <td class="hide-sm">${consPill(p.consigner)}</td>
+    <td class="num">$${money(p.resBasis)}</td>
+    <td class="num">$${money(p.clientPrice)}</td>
+    <td class="num margin">+$${money(p.clientPrice-p.resBasis)}</td>
+    <td><span class="st ${p.status}">${stLabel(p.status)}</span></td>
+  </tr>`).join("");
+
+/* ---------- reseller clients ---------- */
+document.getElementById("resClients").innerHTML = `
+  <div class="acct">
+    <div class="eyebrow">B2B client</div>
+    <h3 class="serif">Maison Kapoor</h3><div class="handle">Wholesale · Delhi</div>
+    <div class="stats"><div><b>5</b>pieces visible</div><div><b>Full</b>catalogue</div><div><b>2</b>reserved</div></div>
+    <div class="ln"><span class="key">EX-7741-K</span><button class="share-btn" data-share="Maison Kapoor">Share link</button></div>
+  </div>
+  <div class="acct">
+    <div class="eyebrow">B2B client</div>
+    <h3 class="serif">Atelier Dubai</h3><div class="handle">Wholesale · DXB</div>
+    <div class="stats"><div><b>3</b>pieces visible</div><div><b>Curated</b>edit</div><div><b>0</b>reserved</div></div>
+    <div class="ln"><span class="key">EX-3092-D</span><button class="share-btn" data-share="Atelier Dubai">Share link</button></div>
+  </div>`;
+document.querySelectorAll(".share-btn").forEach(b=>b.addEventListener("click",()=>toast("Private link copied for "+b.dataset.share)));
+
+/* ---------- client view ---------- */
+let cstate={res:"EX",cat:"all"};
+function renderClient(){
+  const items = PIECES.filter(p=>p.listedBy.includes(cstate.res) && (cstate.cat==="all"||p.cat===cstate.cat));
+  const g=document.getElementById("clientGrid");
+  g.innerHTML = items.length ? items.map(p=>`
+    <div class="card">
+      <div class="plate"><div class="plate-frame"></div><div class="plate-idx">№ ${p.idx}</div>
+        ${p.status!=="available"?`<div class="badge ${p.status}">${stLabel(p.status)}</div>`:`<div class="badge">Available</div>`}
+        <div class="plate-mono serif">${p.brand}</div></div>
+      <div class="cbody">
+        <div class="cbrand">${p.brand}</div>
+        <div class="cmodel serif">${p.model}</div>
+        <div class="cref">${p.ref}</div>
+        <div class="cfoot"><div class="cprice"><span class="cur">$</span>${money(p.clientPrice)}</div><div class="ccond">${p.cond}</div></div>
+      </div>
+    </div>`).join("")
+    : `<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted)" class="serif">This house has no pieces in that category yet.</div>`;
+}
+document.querySelectorAll(".rs").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".rs").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  cstate.res=b.dataset.res;renderClient();
+}));
+document.querySelectorAll("#clientCats button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#clientCats button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  cstate.cat=b.dataset.cat;renderClient();
+}));
+renderClient();
+
+/* ---------- toast ---------- */
+let tt;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2400);}
+</script>
+</body>
+</html>

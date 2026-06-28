@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Edit Experience — Stock Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0A0A0A; --paper:#FAFAF8; --panel:#FFFFFF; --hair:#E4E2DC; --hair-strong:#C9C6BE;
+    --muted:#8C887F; --muted-2:#6A675F; --charcoal:#1C1C1C; --gold:#9A7B3F;
+    --green:#3E6B4F; --red:#9A3B33; --plate:#EFEDE7;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;}
+  body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .serif{font-family:'Cormorant Garamond',Georgia,serif;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .eyebrow{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted-2);font-weight:500;}
+
+  .bar{background:var(--ink);color:#EDEAE3;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-wrap:wrap;}
+  .bar .brand{font-weight:300;letter-spacing:.4em;font-size:13px;text-transform:uppercase;padding:15px 0;}
+  .bar .brand b{font-weight:500;}
+  .bar .ctx{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+  .bar .ctx b{color:#fff;font-weight:500;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 28px 80px;}
+
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--hair);padding-bottom:18px;margin-bottom:24px;}
+  .head h1{font-family:'Cormorant Garamond';font-weight:500;font-size:30px;margin:6px 0 0;line-height:1.05;}
+  .persp{display:flex;align-items:center;gap:12px;}
+  .persp .lbl{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);}
+  .toggle{display:flex;border:1px solid var(--hair-strong);}
+  .toggle button{background:var(--panel);border:none;padding:10px 16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);border-left:1px solid var(--hair);}
+  .toggle button:first-child{border-left:none;}
+  .toggle button.active{background:var(--ink);color:#fff;}
+
+  .balance{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);margin-bottom:8px;}
+  .bcell{background:var(--paper);padding:20px;}
+  .bcell .l{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);}
+  .bcell .v{font-family:'Cormorant Garamond';font-weight:500;font-size:34px;line-height:1.1;margin-top:8px;font-variant-numeric:tabular-nums;}
+  .bcell .v .cur{font-size:16px;color:var(--muted-2);margin-right:2px;}
+  .bcell .sub{font-size:10.5px;color:var(--muted);letter-spacing:.04em;margin-top:4px;}
+  .bcell.owe .v{color:var(--gold);}
+  .splitline{font-size:11px;letter-spacing:.04em;color:var(--muted-2);margin:14px 2px 30px;text-align:center;font-style:italic;}
+  .splitline b{color:var(--ink);font-style:normal;}
+
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--hair-strong);padding-bottom:10px;margin-bottom:18px;}
+  .sec-h .t{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);font-weight:600;}
+  .sec-h .c{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+  /* pending */
+  .pending{display:flex;flex-direction:column;gap:1px;background:var(--hair);border:1px solid var(--hair);margin-bottom:44px;}
+  .pcard{background:var(--paper);padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .pcard .who{font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border:1px solid var(--hair-strong);white-space:nowrap;}
+  .pcard .who.store{color:var(--ink);border-color:var(--ink);}
+  .pcard .who.res{color:var(--gold);border-color:#D9C9A6;}
+  .pcard .desc{flex:1;min-width:200px;}
+  .pcard .desc .m{font-family:'Cormorant Garamond';font-size:17px;font-weight:500;line-height:1.2;}
+  .pcard .desc .d{font-size:11.5px;color:var(--muted-2);letter-spacing:.02em;margin-top:2px;}
+  .pcard .delta{font-family:'Cormorant Garamond';font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .pcard .delta.up{color:var(--gold);}
+  .pcard .delta.flat{color:var(--muted);}
+  .acts{display:flex;gap:8px;}
+  .acts button{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 14px;border:1px solid var(--ink);background:var(--ink);color:#fff;transition:.18s;}
+  .acts button.deny{background:none;color:var(--ink);}
+  .acts button.deny:hover{background:var(--ink);color:#fff;}
+  .acts button:hover{background:var(--charcoal);}
+  .await{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px dashed var(--hair-strong);padding:9px 14px;white-space:nowrap;}
+  .empty-p{background:var(--paper);padding:28px;text-align:center;color:var(--muted);font-style:italic;font-family:'Cormorant Garamond';font-size:18px;}
+
+  /* ledger */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);text-align:left;font-weight:500;padding:0 12px 10px;border-bottom:1px solid var(--hair-strong);}
+  th.num,td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  tbody td{padding:12px;border-bottom:1px solid var(--hair);vertical-align:middle;}
+  tbody tr:hover{background:var(--panel);}
+  td.date{color:var(--muted);font-size:11px;white-space:nowrap;}
+  .mv{font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--hair-strong);color:var(--muted-2);white-space:nowrap;}
+  .mv.sold{color:var(--gold);border-color:#D9C9A6;}
+  .mv.added{color:#3a3a3a;}
+  .mv.removed,.mv.returned{color:var(--muted);}
+  .mv.price{color:var(--ink);}
+  .mv.settled{color:var(--green);border-color:#BcD3C2;}
+  .pieceN{font-family:'Cormorant Garamond';font-size:15px;font-weight:500;}
+  .by{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);}
+  .stt{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;}
+  .stt.approved{color:var(--green);}
+  .stt.denied{color:var(--red);text-decoration:line-through;}
+  .delta-up{color:var(--gold);} .delta-down{color:var(--green);} .delta-zero{color:var(--muted);}
+  .running{font-weight:500;}
+
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;z-index:90;opacity:0;transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:760px){
+    .balance{grid-template-columns:1fr;}
+    .hide-sm{display:none;}
+    .head{flex-direction:column;align-items:flex-start;}
+    table{font-size:11.5px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="brand">EDIT <b>EXPERIENCE</b></div>
+    <div class="ctx">Shared ledger · <b>Store</b> &harr; <b>Vasu (Reseller)</b></div>
+  </div>
+
+  <div class="wrap">
+    <div class="head">
+      <div><div class="eyebrow">Stock ledger &amp; approvals · Live records</div><h1 class="serif">Every move, agreed by both.</h1></div>
+      <div class="persp">
+        <span class="lbl">Acting as</span>
+        <div class="toggle" id="persp">
+          <button class="active" data-as="store">Store (Admin)</button>
+          <button data-as="reseller">Vasu (Reseller)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="balance">
+      <div class="bcell"><div class="l">Pieces on consignment</div><div class="v" id="bCount">0</div><div class="sub" id="bCountSub">store stock held by reseller</div></div>
+      <div class="bcell"><div class="l">Value on consignment</div><div class="v"><span class="cur">$</span><span id="bValue">0</span></div><div class="sub">at agreed store price</div></div>
+      <div class="bcell owe"><div class="l">Net owed to store</div><div class="v"><span class="cur">$</span><span id="bOwed">0</span></div><div class="sub">from sold consigned pieces, unsettled</div></div>
+    </div>
+    <div class="splitline" id="splitline"></div>
+
+    <div class="sec-h"><div class="t">Awaiting approval</div><div class="c"><span id="pendCount">0</span> proposed</div></div>
+    <div class="pending" id="pending"></div>
+
+    <div class="sec-h"><div class="t">Ledger</div><div class="c">Newest first · Running balance owed to store</div></div>
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Piece</th><th class="hide-sm">Movement</th><th class="hide-sm">Proposed by</th>
+        <th class="num">Δ owed</th><th class="num">Running</th><th>Status</th>
+      </tr></thead>
+      <tbody id="ledger"></tbody>
+    </table>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* movement → effect on "owed to store":
+   sold (consigned)   => + agreed   (reseller now owes store)
+   settled            => - amount   (paid down)
+   added/removed/returned/price => 0 to owed (but added/returned change consignment count/value)
+*/
+let acting = "store";
+
+// committed history (oldest→newest); we'll reverse for display
+let ledger = [
+  {date:"02 Jun", piece:"Hermès Birkin 25", sub:"own stock", mv:"added", by:"reseller", owed:0, consign:0, value:0, status:"approved"},
+  {date:"05 Jun", piece:"Rolex Daytona 126500LN", sub:"consigned · agreed $43,000", mv:"added", by:"store", owed:0, consign:+1, value:+43000, status:"approved"},
+  {date:"05 Jun", piece:"Hermès Kelly 28", sub:"consigned · agreed $30,500", mv:"added", by:"store", owed:0, consign:+1, value:+30500, status:"approved"},
+  {date:"11 Jun", piece:"Chanel Classic Flap M", sub:"sold to Maison Kapoor", mv:"sold", by:"reseller", owed:+7400, consign:0, value:0, status:"approved"},
+  {date:"15 Jun", piece:"Chanel Classic Flap M", sub:"settlement received", mv:"settled", by:"store", owed:-7400, consign:0, value:0, status:"approved"},
+  {date:"20 Jun", piece:"Cartier Love Bracelet", sub:"consigned · agreed $6,900", mv:"added", by:"store", owed:0, consign:+1, value:+6900, status:"approved"},
+];
+
+// pending proposals
+let pending = [
+  {id:"p1", by:"store", piece:"Rolex GMT-Master II", sub:"Add to your consignment · agreed $24,000", mv:"added", owed:0, consign:+1, value:+24000, deltaLabel:"+1 piece"},
+  {id:"p2", by:"reseller", piece:"Hermès Kelly 28", sub:"Mark SOLD · client $34,500 · settle store $30,500", mv:"sold", owed:+30500, consign:-1, value:-30500, deltaLabel:"+$30,500 owed"},
+  {id:"p3", by:"store", piece:"Rolex Daytona 126500LN", sub:"Raise floor $43,000 → $44,000", mv:"price", owed:0, consign:0, value:+1000, deltaLabel:"$0 owed"},
+  {id:"p4", by:"reseller", piece:"Cartier Love Bracelet", sub:"Return to store · not selling", mv:"returned", owed:0, consign:-1, value:-6900, deltaLabel:"−1 piece"},
+];
+
+const money=n=>Math.abs(n).toLocaleString("en-US");
+const $=s=>document.querySelector(s);
+
+function recompute(){
+  let consign=0, value=0, owed=0;
+  ledger.filter(e=>e.status==="approved").forEach(e=>{ consign+=e.consign; value+=e.value; owed+=e.owed; });
+  return {consign,value,owed};
+}
+
+function renderBalance(){
+  const {consign,value,owed}=recompute();
+  $("#bCount").textContent=consign;
+  $("#bValue").textContent=money(value);
+  $("#bOwed").textContent=money(owed);
+  $("#splitline").innerHTML = owed>0
+    ? `Vasu owes the store <b>$${money(owed)}</b> on sold consigned stock, holding <b>${consign} pieces</b> worth <b>$${money(value)}</b>.`
+    : `All settled. Vasu currently holds <b>${consign} pieces</b> on consignment worth <b>$${money(value)}</b>.`;
+}
+
+function renderPending(){
+  $("#pendCount").textContent=pending.length;
+  const box=$("#pending");
+  if(!pending.length){ box.innerHTML=`<div class="empty-p">Nothing waiting. Every record is agreed.</div>`; return; }
+  box.innerHTML = pending.map(p=>{
+    const counterpart = p.by==="store" ? "reseller" : "store";
+    const canAct = acting===counterpart; // only the other side approves
+    const whoLabel = p.by==="store" ? "Store proposes" : "Reseller proposes";
+    const deltaClass = p.owed>0?"up":"flat";
+    const actions = canAct
+      ? `<div class="acts"><button data-ok="${p.id}">Approve</button><button class="deny" data-no="${p.id}">Deny</button></div>`
+      : `<div class="await">Awaiting ${p.by==="store"?"reseller":"store"}</div>`;
+    return `<div class="pcard">
+      <span class="who ${p.by==='store'?'store':'res'}">${whoLabel}</span>
+      <div class="desc"><div class="m serif">${p.piece}</div><div class="d">${p.sub}</div></div>
+      <div class="delta ${deltaClass}">${p.deltaLabel}</div>
+      ${actions}
+    </div>`;
+  }).join("");
+  box.querySelectorAll("[data-ok]").forEach(b=>b.addEventListener("click",()=>resolve(b.dataset.ok,true)));
+  box.querySelectorAll("[data-no]").forEach(b=>b.addEventListener("click",()=>resolve(b.dataset.no,false)));
+}
+
+function resolve(id, approved){
+  const i=pending.findIndex(p=>p.id===id); if(i<0) return;
+  const p=pending[i];
+  const today="27 Jun";
+  ledger.push({date:today, piece:p.piece, sub:p.sub, mv:p.mv, by:p.by,
+    owed: approved?p.owed:0, consign: approved?p.consign:0, value: approved?p.value:0,
+    status: approved?"approved":"denied"});
+  pending.splice(i,1);
+  renderBalance(); renderPending(); renderLedger();
+  toast(approved ? p.piece+" approved · ledger updated" : p.piece+" denied · no change made");
+}
+
+function renderLedger(){
+  // running owed computed oldest→newest, displayed newest→oldest
+  let run=0; const rows=[];
+  ledger.forEach(e=>{ if(e.status==="approved") run+=e.owed; rows.push({...e, running:run}); });
+  const body=$("#ledger");
+  body.innerHTML = rows.slice().reverse().map(e=>{
+    const dCls = e.status!=="approved" ? "delta-zero" : e.owed>0?"delta-up":e.owed<0?"delta-down":"delta-zero";
+    const dTxt = e.owed>0?`+$${money(e.owed)}`:e.owed<0?`−$${money(e.owed)}`:"$0";
+    return `<tr>
+      <td class="date">${e.date}</td>
+      <td><div class="pieceN serif">${e.piece}</div><div class="by" style="text-transform:none;letter-spacing:.02em;color:var(--muted)">${e.sub||""}</div></td>
+      <td class="hide-sm"><span class="mv ${e.mv}">${e.mv}</span></td>
+      <td class="hide-sm"><span class="by">${e.by}</span></td>
+      <td class="num ${dCls}">${e.status==="denied"?"—":dTxt}</td>
+      <td class="num running">${e.status==="approved"?"$"+money(e.running):"—"}</td>
+      <td><span class="stt ${e.status}">${e.status}</span></td>
+    </tr>`;
+  }).join("");
+}
+
+$("#persp").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  $("#persp").querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); acting=b.dataset.as; renderPending();
+}));
+
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2600);}
+
+renderBalance(); renderPending(); renderLedger();
+</script>
+</body>
+</html>
